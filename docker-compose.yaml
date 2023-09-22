@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+
+  # ----------------- #
+  # Apache Spark      #
+  # ----------------- #
+  spark:
+    build : .
+    restart : always
+    environment:
+      - SPARK_MODE=master
+      - NEO4J_PASSWORD=passwordneo4j
+      - POSTGRES_PASSWORD=my_pass
+    ports:
+      - '8080:8080'
+      - '4040:4040'
+      - '7077:7077'
+    volumes:
+      - ./src:/opt/bitnami/spark/work/src
+      - ./data:/opt/bitnami/spark/work/data
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+  spark-worker:
+    build : .
+    restart : always
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=6G
+      - SPARK_EXECUTOR_MEMORY=6G
+      - SPARK_WORKER_CORES=2
+
+    volumes:
+      - ./data:/data
+      - ./src:/src
+
+
+
+  postgres-db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: my_pass
+    ports:
+      - 5433:5432
+    volumes:
+      - ./data/postgres_data:/var/lib/postgresql/data
+
+  postgres_adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8090:8080
+  
+
