@@ -7,6 +7,8 @@ from pyspark.sql import SparkSession
 
 from variables.memory_path import MEMORY_PATHS_FOLDER
 
+from variables.hyperparameters import NB_DRAWS, MAX_ROW_SIZE_PER_TASK
+
 import os
 
 #RELATIVE_LIMIT_ROWS_DF_MEMORY = 10000000
@@ -60,11 +62,7 @@ def spark_append_to_memory_paths(result_paths_list):
 
     sc = spark.sparkContext
 
-    print(result_paths_list[0:5])
-
-    print(type(result_paths_list))
-
-    RDDmap = sc.parallelize(result_paths_list) # numSlices= ...
+    RDDmap = sc.parallelize(result_paths_list, numSlices = (NB_DRAWS // MAX_ROW_SIZE_PER_TASK) + 1)
 
     df_result_spark = RDDmap.map(lambda m : (m["source"], \
                                         m["target"], \
@@ -72,14 +70,27 @@ def spark_append_to_memory_paths(result_paths_list):
                                         m["totalCost"], \
                                         m["costs"])).toDF(["source","target","path","totalCost","costs"])
     
-    #if os.path.exists(MEMORY_PATHS_FOLDER):
-    if len(os.listdir(MEMORY_PATHS_FOLDER)) != 0:
+    if os.path.exists(MEMORY_PATHS_FOLDER):
+        if len(os.listdir(MEMORY_PATHS_FOLDER)) != 0:
+
+            print("Append results to memory path...")
+
+            df_spark_memory = spark.read.parquet(MEMORY_PATHS_FOLDER)\
             
-        df_result_spark.write.mode("append").parquet(MEMORY_PATHS_FOLDER)
+            df_concatenate = df_spark_memory.unionByName(df_result_spark)
+            
+            df_concatenate.repartition("source").write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
+
+        else:
+
+            print("Overwrite/write results to memory path...")
+            
+            df_result_spark.repartition("source").write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
 
     else:
+        print("Overwrite/write results to memory path...")
 
-        df_result_spark.write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
+        df_result_spark.repartition("source").write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
 
      
         #df_result.to_parquet(DF_MEMORY_PATH, engine="fastparquet", append=True)

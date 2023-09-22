@@ -21,7 +21,6 @@ if __name__ == "__main__":
 
     check_or_regenerate_projection(experiment_name)
 
-
     batch_nb = 1
     
     while True:

@@ -21,8 +21,15 @@ TARGET_DIVIDE_FACTOR = 0.1 # A factor to limit the memory buffer of the target l
 
 # --- BATCH parameters --- #
 
-NB_DRAWS = 20
+NB_DRAWS = 1000
 
-NEO4J_BATCH_SIZE = 5
+NEO4J_BATCH_SIZE = 100
+
+RATIO_MIN_DRAWS = 1.2
+
+
+# --- SPARK PARAMATERS ---- #
+
+MAX_ROW_SIZE_PER_TASK = 200
 
 

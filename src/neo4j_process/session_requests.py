@@ -1,5 +1,9 @@
 import pandas as pd
 
+import numpy as np
+
+import time
+
 from neo4j import GraphDatabase, basic_auth
 
 from neo4j_process.cypher_requests import get_all_communes_with_properties_cypher, check_projections_list, projection_graph, shortest_path_request
@@ -85,6 +89,8 @@ def compute_shortest_paths_session(df_to_calc, experiment_name):
     print(f"Neo4J batch size : {NEO4J_BATCH_SIZE}.")
 
     with driver.session() as session:
+
+        start_time = time.time()
         
         result_paths_list = []
         
@@ -94,11 +100,17 @@ def compute_shortest_paths_session(df_to_calc, experiment_name):
                                     
             print("neo4j request...")
 
+            start_time = time.time()
+
             result = session.execute_write(shortest_path_request, props_batch, experiment_name)
+
+            print(f"Neo4J request done in {np.around(time.time() - start_time, 2)} sec.")
 
             result_paths_list.extend(result)
             
         driver.close()
+
+        print(f"Neo4J request done")
 
     return result_paths_list
 
