@@ -47,9 +47,9 @@ def spark_comparison_to_df_memory_paths(df_batch):
 
     df_join = df_spark_batch.join(df_spark_memory, condition, how='left').toPandas()
 
-    print(df_join.head())
+    #print(df_join.head())
 
-    print(len(df_join))
+    #print(len(df_join))
 
     return df_join.loc[df_join["source_memory"].isna(),["source", "target"]], df_join.loc[~df_join["source_memory"].isna(),["source", "target"]]
 
