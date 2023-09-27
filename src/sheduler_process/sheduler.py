@@ -12,7 +12,7 @@ from variables.hyperparameters import NB_DRAWS, RATIO_MIN_DRAWS
 
 from variables.memory_path import MEMORY_PATHS_FOLDER
 
-from spark_process.spark_functions import spark_comparison_to_df_memory_paths, spark_append_to_memory_paths
+from spark_process.spark_and_memory_paths import spark_comparison_to_df_memory_paths, spark_append_to_memory_paths
 
 from neo4j_process.session_requests import compute_shortest_paths_session
 

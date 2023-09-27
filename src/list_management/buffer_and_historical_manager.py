@@ -12,7 +12,7 @@ from collections import deque
 
 from variables.memory_path import HISTORICAL_BATCHES_FOLDER, BUFFER_BATCHES_FOLDER
 
-from variables.hyperparameters import MAX_LEN_BUFFER_BATCHES_LIST
+from variables.hyperparameters import MAX_LEN_BUFFER_BATCHES_LIST, BATCH_SIZE_FAST_RECOMPUTATION
 
 
 def verify_mode(data, mode):
@@ -106,7 +106,7 @@ def append_to_list(path_file, data, batch_list):
             time.sleep(1)
 
 
-def append_to_queue(path_file, data, batch_list):
+def append_to_queue(path_file, data, batch_list, direction="right"):
 
     while True:
 
@@ -116,11 +116,13 @@ def append_to_queue(path_file, data, batch_list):
 
                 existent_queue = data["queue"]
 
-                existent_queue.append(batch_list)
+                if direction=='left':
+                    existent_queue.appendleft(batch_list)
+
+                else:
+                    existent_queue.append(batch_list)
 
                 data['queue'] = existent_queue
-
-                print(f"new data: {data}")
 
                 #time.sleep(10)
 
@@ -145,8 +147,6 @@ def initialize_a_queue(path_file, batch_list, mode):
      
     data = {"mode": mode,
             "queue":queue}
-
-    print(f"initialize {data}")
     
     try:
         os.makedirs(BUFFER_BATCHES_FOLDER)
@@ -240,11 +240,7 @@ def get_all_historical_batches(experiment_name, mode):
 
     path_file = HISTORICAL_BATCHES_FOLDER + experiment_name + ".pkl"
 
-    print(path_file)
-
     if os.path.exists(path_file):
-
-        print("here")
 
         data = read_a_list(path_file)
 
@@ -258,10 +254,9 @@ def get_all_historical_batches(experiment_name, mode):
          
         return None
     
+    
 
-
-
-def append_to_buffer_batches(batch_list, experiment_name, mode):
+def append_to_buffer_batches(batch_list, experiment_name, mode, direction='right'):
 
     print("Append new batch list to buffer batches data.")
 
@@ -274,8 +269,15 @@ def append_to_buffer_batches(batch_list, experiment_name, mode):
         data = read_a_list(path_file)
 
         verify_mode(data, mode)
+
+        if direction=="left":
         
-        append_to_queue(path_file, data, batch_list)
+            append_to_queue(path_file, data, batch_list, direction='left')
+
+        else:
+
+            append_to_queue(path_file, data, batch_list)
+
 
     else:
         
@@ -296,8 +298,14 @@ def read_head_buffer_batches(experiment_name, mode):
         data = read_a_list(path_file)
         
         verify_mode(data, mode)
+
+        if len(data['queue']) > 0:
         
-        return data['queue'][0]
+            return data['queue'][0]
+        
+        else:
+
+            return None
     
     else:
 
@@ -320,13 +328,46 @@ def pop_head_buffer_batches(experiment_name, mode):
         
         pop_data = pop_queue(path_file, data)
 
-        return pop_data
+        if len(data['queue']) > 0:
+        
+            return pop_data
+        
+        else:
+
+            return None
 
     else:
 
         print("Folder not found for this experiment...")
          
         return None
+    
+
+def batch_reverse(iterable, n=1):
+        l = len(iterable)
+        for ndx in range(l, 0, -n):
+            yield iterable[max(ndx - n, 0):ndx]
+
+
+def transfert_historical_to_buffer(experiment_name, exp_fr, mode):
+
+    print("!!!!------------------------!!!!")
+    print("Fast-Recomputation Mode :")
+    print(f"Transfer : from historical list - experiment : {exp_fr}")
+    print(f"---> to buffer batches list - experiment : {experiment_name}")
+    print("!!!!------------------------!!!!")
+
+    hist_list = get_all_historical_batches(exp_fr, mode)
+
+    print(f"Founded historical data of length on the experiment : {len(hist_list)} draws ...")
+
+    for hist_batch in batch_reverse(hist_list, BATCH_SIZE_FAST_RECOMPUTATION):
+
+        print(f"Transfert: {len(hist_batch)} draws...")
+
+        append_to_buffer_batches(hist_batch, experiment_name, mode, direction='left')
+
+    print("Transfer done. (Data are now in the left of the buffer batches list) ")
     
 
 

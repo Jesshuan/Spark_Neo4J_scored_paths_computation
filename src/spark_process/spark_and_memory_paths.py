@@ -26,6 +26,29 @@ import os
     return df """
 
 
+def spark_get_a_df_memory_paths_selection_from_batch(batch_list):
+
+    spark = SparkSession.builder.master("local").getOrCreate()
+
+    df_shuffle_schema = StructType([ StructField("source", IntegerType(), True)\
+                       ,StructField("target", IntegerType(), True)])
+    
+    df_spark_batch = spark.createDataFrame(batch_list, schema=df_shuffle_schema)
+
+    df_spark_memory = spark.read.parquet(MEMORY_PATHS_FOLDER)\
+                            .dropDuplicates(["source", "target"])\
+                            .withColumnRenamed("source", "source_memory")\
+                            .withColumnRenamed("target", "target_memory")
+    
+    condition = (df_spark_batch.source == df_spark_memory.source_memory) & (df_spark_batch.target == df_spark_memory.target_memory)
+
+    df_join = df_spark_batch.join(df_spark_memory, condition, how='left').select(["source","target","path","totalCost","costs"])
+
+    df_spark_memory.unpersist()
+
+    return df_join
+
+
 def spark_comparison_to_df_memory_paths(df_batch):
 
     spark = SparkSession.builder.master("local").getOrCreate()
@@ -47,9 +70,7 @@ def spark_comparison_to_df_memory_paths(df_batch):
 
     df_join = df_spark_batch.join(df_spark_memory, condition, how='left').toPandas()
 
-    #print(df_join.head())
-
-    #print(len(df_join))
+    df_spark_memory.unpersist()
 
     return df_join.loc[df_join["source_memory"].isna(),["source", "target"]], df_join.loc[~df_join["source_memory"].isna(),["source", "target"]]
 

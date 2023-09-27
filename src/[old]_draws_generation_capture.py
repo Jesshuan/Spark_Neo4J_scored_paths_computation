@@ -25,7 +25,7 @@ from post_neo4j_process.filter import filter_begining
 
 from database_process.transfert import update_to_database
 
-from spark_process.spark_functions import spark_count, compare_to_df_memory, append_to_df_memory
+from spark_process.spark_and_memory_paths import spark_count, compare_to_df_memory, append_to_df_memory
 
 from buffer_lists_process.manage_batch_spark_lists import append_to_spark_batch_list, get_spark_batch_list, pop_left_spark_batch_list
 
@@ -332,7 +332,7 @@ while True: # infinite loop generation of batchs !
 
     print("New computations added to spark dataframe memory...")
 
-    df_result_spark.unpersist()
+    #df_result_spark.unpersist()
 
     time_register = np.round(time.time() - start_time, 2)
 

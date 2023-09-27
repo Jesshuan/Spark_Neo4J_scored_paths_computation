@@ -1,7 +1,7 @@
 import sys
 
 
-from user_interface.mode_experiment import mode_experiment_paths_computer, mode_experiment_spark_agregator
+from user_interface.mode_experiment import mode_experiment_paths_computer
 
 from list_management.st_provider import provide_source_target_lists
 
@@ -23,11 +23,14 @@ if __name__ == "__main__":
     check_or_regenerate_projection(experiment_name)
 
     batch_nb = 1
+
+    print("")
+    print("---- PATH COMPUTATION ON NEO4J -----")
+    print("")
     
     while True:
 
         print(f" -> Batch number : {batch_nb}.")
-
 
         batch_st_list = sheduler_batch(source_list, target_list, experiment_name, mode)
 
