@@ -1,5 +1,8 @@
 import sys
 
+import time
+
+from datetime import datetime
 
 from user_interface.mode_experiment import mode_experiment_spark_agregator
 
@@ -9,18 +12,18 @@ from neo4j_process.session_requests import get_all_communes_with_properties_sess
 
 from list_management.buffer_and_historical_manager import transfert_historical_to_buffer, read_head_buffer_batches, pop_head_buffer_batches
 
-from spark_process.spark_and_memory_paths import spark_get_a_df_memory_paths_selection_from_batch
+from aggregator_process.organizer import aggregate_a_batch
 
-from spark_process.spark_filters import spark_filter_short_travels, spark_filter_cut_begining
+from database_process.db_interactions import transfer_to_db_and_snapshot
 
-from spark_process.spark_aggregation import spark_aggregation
+from database_process.db_save_process import save_df_to_csv
 
-from pyspark.sql.functions import expr
 
 if __name__ == "__main__":
 
     mode, experiment_name, fast_recomp, exp_fr = mode_experiment_spark_agregator(sys.argv[1:])
 
+    date = str(datetime.now()).split(".")[0].replace(" ","_")
 
     if mode == "equiprobable":
 
@@ -44,44 +47,36 @@ if __name__ == "__main__":
 
     while True:
 
+        print(f" -> Batch number : {batch_nb}.")
+
         batch_list = read_head_buffer_batches(experiment_name, mode)
 
         if batch_list is None:
 
-            break
+            print("waiting for a new batch...")
 
-        print(f"Aggregation of a batch of size {len(batch_list)}...")
+            time.sleep(5)
 
-        print("batch extract :")
+            continue
 
-        print(batch_list[0:5])
+        if mode=="weighted":
 
-        df_spark_batch = spark_get_a_df_memory_paths_selection_from_batch(batch_list)
+            df_result = aggregate_a_batch(batch_list, mode)
 
-        #df_spark_batch = spark_filter_short_travels(df_spark_batch)
+        elif mode=="equiprobable":
 
-        #df_spark_batch = spark_filter_cut_begining(df_spark_batch)
+            df_result = aggregate_a_batch(batch_list, mode, weighted_feats_df)
 
-        print(df_spark_batch.withColumn("Len_costs",expr("size(costs)")).withColumn("Len_path",expr("size(path)")).take(1))
+        df_table_saved = transfer_to_db_and_snapshot(df_result, experiment_name)
 
-        if mode == "equiprobable":
+        save_df_to_csv(df_table_saved, experiment_name, date, batch_nb)
 
-            df_result = spark_aggregation(df_spark_batch.take(1), mode, weighted_feats_df = weighted_feats_df)
+        pop_head_buffer_batches(experiment_name, mode)
 
-        elif mode == "weighted":
+        batch_nb += 1
 
-            df_result = spark_aggregation(df_spark_batch, mode)
-
-
-        print(df_result)
-
-        print("---")
-
-        print(df_result.loc[df_result['path'].isnull(),:])
-
-        print("---")
-
-        print(df_result.loc[df_result['costs'].isnull(),:])
+        
+        
 
 
 

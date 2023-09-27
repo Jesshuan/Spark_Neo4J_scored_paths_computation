@@ -19,6 +19,7 @@ services:
     volumes:
       - ./src:/opt/bitnami/spark/work/src
       - ./data:/opt/bitnami/spark/work/data
+      - ./test:/opt/bitnami/spark/work/test
     extra_hosts:
     - "host.docker.internal:host-gateway"
 
@@ -35,6 +36,7 @@ services:
     volumes:
       - ./data:/data
       - ./src:/src
+      - ./test:/test
 
 
 
