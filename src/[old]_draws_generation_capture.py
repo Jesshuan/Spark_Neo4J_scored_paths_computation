@@ -23,7 +23,7 @@ from neo4j_process.requests import get_all_communes_with_coords, shortest_path, 
 
 from post_neo4j_process.filter import filter_begining
 
-from database_process.transfert import update_to_database
+from database_process.db_requests import update_to_database
 
 from spark_process.spark_and_memory_paths import spark_count, compare_to_df_memory, append_to_df_memory
 

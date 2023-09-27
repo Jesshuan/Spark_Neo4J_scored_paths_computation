@@ -56,6 +56,19 @@ def get_all_communes_with_properties_cypher(tx, properties_list):
     return result.data()
 
 
+def get_cities_path_from_path_list(tx, props_list):
+
+    query = "UNWIND $props_list AS map \
+                MATCH (c:CITY)-[NEARLY_TO]->(p:ROAD_POINT) \
+                WHERE ID(p) IN map.path_truncated \
+                RETURN map.source as source, \
+                      map.target as target, \
+                      apoc.coll.toSet(collect(c.insee)) AS cities_path "
+    
+    result = tx.run(query, props_list = props_list)
+    return result.data()
+
+
 def shortest_path_request(tx, props_list, graph_proj_name):
 
     query = "UNWIND $props_list AS map \
@@ -69,15 +82,9 @@ def shortest_path_request(tx, props_list, graph_proj_name):
                     relationshipWeightProperty: 'travel_time' \
                         }) \
             YIELD nodeIds, totalCost, costs \
-            CALL { \
-                    WITH nodeIds \
-                    MATCH (c:CITY)-[NEARLY_TO]->(p:ROAD_POINT) \
-                    WHERE ID(p) IN nodeIds \
-                    RETURN apoc.coll.toSet(collect(c.insee)) AS path \
-                } \
-                RETURN map.source as source, \
+            RETURN map.source as source, \
                     map.target as target, \
-                    path, \
+                    nodeIds as path, \
                     totalCost, \
                     costs"
     
