@@ -9,7 +9,7 @@ from pyspark.sql.types import FloatType, IntegerType, DoubleType, StructType,Str
 
 SOURCE_FILTER_COL = "nb_vp_rechargeables_el"
 
-SOURCE_FILTER_VALUE = 500.0 # Float value to filter
+SOURCE_FILTER_VALUE = 5 # Float value to filter
 
 SOURCE_DIVIDE_FACTOR = 0.01 # A factor to limit the memory buffer of the source list in case of "weighted" mode
 
@@ -17,7 +17,7 @@ SOURCE_DIVIDE_FACTOR = 0.01 # A factor to limit the memory buffer of the source 
 
 TARGET_FILTER_COL = "visit"
 
-TARGET_FILTER_VALUE = 200.0 # Float value to filter
+TARGET_FILTER_VALUE = 2 # Float value to filter
 
 TARGET_DIVIDE_FACTOR = 0.1 # A factor to limit the memory buffer of the target list in case of "weighted" mode
 
@@ -29,9 +29,9 @@ TARGET_DIVIDE_FACTOR = 0.1 # A factor to limit the memory buffer of the target l
 
 # --- BATCH parameters --- #
 
-NB_DRAWS = 20
+NB_DRAWS = 100
 
-NEO4J_BATCH_SIZE = 5
+NEO4J_BATCH_SIZE = 20
 
 RATIO_MIN_DRAWS = 1
 
@@ -76,14 +76,13 @@ WEIGHTED_DF_TARGET_SCHEMA = StructType([\
 WEIGHTING_RULE = "(1 + nb_elec_s / 100) * (1 + visit_t / 10)"
 
 
-def weighting_process_rule(source_feat_value, target_feat_value):
-    pass
-
 # --------------------------------- #
 
 
 # --- Intern SPARK parameters ---- #
 
 MAX_ROW_SIZE_PER_TASK = 200
+
+MIN_MEMORY_PATH_NB_FILES = 7
 
 

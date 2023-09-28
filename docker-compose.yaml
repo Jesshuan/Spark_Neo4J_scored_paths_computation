@@ -11,7 +11,7 @@ services:
     environment:
       - SPARK_MODE=master
       - NEO4J_PASSWORD=passwordneo4j
-      - POSTGRES_PASSWORD=my_pass
+      - DB_PASSWORD=my_pass
     ports:
       - '8080:8080'
       - '4040:4040'
@@ -37,8 +37,6 @@ services:
       - ./data:/data
       - ./src:/src
       - ./test:/test
-
-
 
   postgres-db:
     image: postgres

@@ -16,6 +16,8 @@ from spark_process.spark_and_memory_paths import spark_comparison_to_df_memory_p
 
 from neo4j_process.session_requests import compute_shortest_paths_session
 
+from list_management.memory_path import check_and_clean_memory_path
+
 
 
 def generate_a_batch(source_list, target_list, nb_draws):
@@ -133,6 +135,8 @@ def sheduler_batch(source_list, target_list, experiment_name, mode):
     spark_append_to_memory_paths(result_paths_list)
 
     print(f"Spark job done in {np.around(time.time() - start_time, 2)} sec.")
+
+    check_and_clean_memory_path()
 
     if mode == "equiprobable":
 

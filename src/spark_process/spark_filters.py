@@ -41,7 +41,7 @@ def truncate_filter(path_array, costs_array):
 
 def spark_filter_cut_begining(df_spark_batch):
 
-    spark = SparkSession.builder.master("local").getOrCreate()
+    spark = SparkSession.builder.appName("Spark_Filter").master("local").getOrCreate()
 
     #truncate_filterUDF = udf(lambda l : truncate_filter(l), ArrayType())
 

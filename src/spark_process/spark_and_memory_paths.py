@@ -11,6 +11,8 @@ from variables.hyperparameters import NB_DRAWS, MAX_ROW_SIZE_PER_TASK
 
 import os
 
+from delta import *
+
 #RELATIVE_LIMIT_ROWS_DF_MEMORY = 10000000
 
 
@@ -25,17 +27,40 @@ import os
     
     return df """
 
+def spark_get_all_memory_paths():
+
+    builder = SparkSession.builder.appName("Spark_Memory_Path")  \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+
+    spark = configure_spark_with_delta_pip(builder).master("local").getOrCreate()
+
+    df_spark_memory = spark.read.format("delta").load(MEMORY_PATHS_FOLDER)\
+                            .dropDuplicates(["source", "target"])
+    
+    return df_spark_memory
+
+
 
 def spark_get_a_df_memory_paths_selection_from_batch(batch_list):
 
-    spark = SparkSession.builder.master("local").getOrCreate()
+    builder = SparkSession.builder.appName("Spark_Memory_Path")  \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+
+    spark = configure_spark_with_delta_pip(builder).master("local").getOrCreate()
+
+    '''spark = SparkSession.builder \
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
+        .master("local").getOrCreate()'''
 
     df_shuffle_schema = StructType([ StructField("source", IntegerType(), True)\
                        ,StructField("target", IntegerType(), True)])
     
     df_spark_batch = spark.createDataFrame(batch_list, schema=df_shuffle_schema)
 
-    df_spark_memory = spark.read.parquet(MEMORY_PATHS_FOLDER)\
+    df_spark_memory = spark.read.format("delta").load(MEMORY_PATHS_FOLDER)\
                             .dropDuplicates(["source", "target"])\
                             .withColumnRenamed("source", "source_memory")\
                             .withColumnRenamed("target", "target_memory")
@@ -46,19 +71,25 @@ def spark_get_a_df_memory_paths_selection_from_batch(batch_list):
 
     df_spark_memory.unpersist()
 
+    df_spark_batch.unpersist()
+
     return df_join
 
 
 def spark_comparison_to_df_memory_paths(df_batch):
 
-    spark = SparkSession.builder.master("local").getOrCreate()
+    builder = SparkSession.builder.appName("Spark_Memory_Path")  \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+
+    spark = configure_spark_with_delta_pip(builder).master("local").getOrCreate()
 
     df_shuffle_schema = StructType([ StructField("source", IntegerType(), True)\
                        ,StructField("target", IntegerType(), True)])
 
     df_spark_batch = spark.createDataFrame(df_batch, schema=df_shuffle_schema)
 
-    df_spark_memory = spark.read.parquet(MEMORY_PATHS_FOLDER)\
+    df_spark_memory = spark.read.format("delta").load(MEMORY_PATHS_FOLDER)\
                             .select("source", "target")\
                             .dropDuplicates(["source", "target"])\
                             .withColumnRenamed("source", "source_memory")\
@@ -72,6 +103,8 @@ def spark_comparison_to_df_memory_paths(df_batch):
 
     df_spark_memory.unpersist()
 
+    df_spark_batch.unpersist()
+
     return df_join.loc[df_join["source_memory"].isna(),["source", "target"]], df_join.loc[~df_join["source_memory"].isna(),["source", "target"]]
 
 
@@ -79,7 +112,11 @@ def spark_comparison_to_df_memory_paths(df_batch):
 
 def spark_append_to_memory_paths(result_paths_list):
 
-    spark = SparkSession.builder.master("local").getOrCreate()
+    builder = SparkSession.builder.appName("Spark_Memory_Path") \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+
+    spark = configure_spark_with_delta_pip(builder).master("local").getOrCreate()
 
     sc = spark.sparkContext
 
@@ -96,36 +133,25 @@ def spark_append_to_memory_paths(result_paths_list):
 
             print("Append results to memory path...")
 
-            df_spark_memory = spark.read.parquet(MEMORY_PATHS_FOLDER)\
+            df_spark_memory = spark.read.format("delta").load(MEMORY_PATHS_FOLDER)\
             
             df_concatenate = df_spark_memory.unionByName(df_result_spark)
             
-            df_concatenate.repartition("source").write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
+            df_concatenate.repartition("source").write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
 
         else:
 
             print("Overwrite/write results to memory path...")
             
-            df_result_spark.repartition("source").write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
+            df_result_spark.repartition("source").write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
 
     else:
         print("Overwrite/write results to memory path...")
 
-        df_result_spark.repartition("source").write.mode("overwrite").parquet(MEMORY_PATHS_FOLDER)
+        df_result_spark.repartition("source").write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
 
+    df_result_spark.unpersist()
      
-        #df_result.to_parquet(DF_MEMORY_PATH, engine="fastparquet", append=True)
-
-        #df_result.repartition(nb_part).write.mode("append").parquet(DF_MEMORY_PATH)
-
-        '''df_memory_new = df_memory.unionByName(df_result)
-
-        df_memory_new.write.mode("overwrite").parquet(DF_MEMORY_PATH)'''
-
-
-        """ df.to_parquet(file_path, engine='fastparquet')
-            else:
-                df.to_parquet(file_path, engine='fastparquet', append=True) """
     
 
 

@@ -8,7 +8,7 @@ from variables.hyperparameters import MAX_ROW_SIZE_PER_TASK,WEIGHTED_DF_TARGET_S
 
 def spark_aggregation(result_paths_list, mode, len_df, weighted_feats_df = None):
 
-    spark = SparkSession.builder.master("local").getOrCreate()
+    spark = SparkSession.builder.appName("Spark_Aggregator").master("local").getOrCreate()
 
     sc = spark.sparkContext
 
