@@ -28,7 +28,7 @@ def transfer_to_db_and_snapshot(df_result, experiment_name, date, batch_nb, mode
 
     table_name = experiment_name
 
-    meta_table_name = "meta" + experiment_name
+    meta_table_name = "meta_" + experiment_name
 
     tables_list = get_all_tables()
 
