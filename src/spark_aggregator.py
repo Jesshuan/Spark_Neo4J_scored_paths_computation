@@ -8,6 +8,8 @@ from user_interface.mode_experiment import mode_experiment_spark_agregator
 
 from variables.hyperparameters import COLUMNS_LIST_FOR_WEIGHTING
 
+from variables.connection_variables import DB_PASSWORD
+
 from neo4j_process.session_requests import get_all_communes_with_properties_session
 
 from list_management.buffer_and_historical_manager import transfert_historical_to_buffer, read_head_buffer_batches, pop_head_buffer_batches
@@ -26,6 +28,8 @@ if __name__ == "__main__":
     date = datetime.now()
 
     string_date = str(date).split(".")[0].replace(" ","_")
+
+    print(DB_PASSWORD)
 
     if mode == "equiprobable":
 

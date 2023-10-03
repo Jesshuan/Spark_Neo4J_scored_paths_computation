@@ -10,8 +10,8 @@ services:
     restart : always
     environment:
       - SPARK_MODE=master
-      - NEO4J_PASSWORD=passwordneo4j
-      - DB_PASSWORD=my_pass
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - DB_PASSWORD=${DB_PASSWORD}
     ports:
       - '8080:8080'
       - '4040:4040'
@@ -42,7 +42,7 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: my_pass
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - 5433:5432
     volumes:
@@ -53,5 +53,5 @@ services:
     restart: always
     ports:
       - 8090:8080
-  
+
 
