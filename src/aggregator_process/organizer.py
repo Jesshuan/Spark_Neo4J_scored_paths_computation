@@ -18,7 +18,7 @@ def aggregate_a_batch(batch_list, mode, weighted_feats_df = None):
 
     print(f" **** --- AGGREGATOR PROCESS in Mode : {mode} ---- ***")
 
-    print(f"Aggregation of a batch of size {len(batch_list)}...")
+    print(f"Aggregation of a batch of initial size {len(batch_list)}...")
 
     print("batch extract :")
 
@@ -66,4 +66,4 @@ def aggregate_a_batch(batch_list, mode, weighted_feats_df = None):
 
     print(df_result.head())
 
-    return df_result
+    return df_result, len_df_filter

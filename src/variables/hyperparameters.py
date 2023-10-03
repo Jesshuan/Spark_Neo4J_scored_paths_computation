@@ -3,6 +3,11 @@
 from pyspark.sql.types import FloatType, IntegerType, DoubleType, StructType,StructField
 
 
+# ---- GENERAL parameters ------- #
+
+CONTRIBUTOR = "jhon_doe"
+
+
 # --- Init Filters for Communes --- #
 
 # Source communes filtered by :
@@ -31,15 +36,15 @@ TARGET_DIVIDE_FACTOR = 0.1 # A factor to limit the memory buffer of the target l
 
 NB_DRAWS = 100
 
-NEO4J_BATCH_SIZE = 20
+NEO4J_BATCH_SIZE = 10
 
 RATIO_MIN_DRAWS = 1
 
-MAX_LEN_BUFFER_BATCHES_LIST = 10000
+MAX_LEN_BUFFER_BATCHES_LIST = 10000 # Maximun number of batches stocked in the buffer list and not already processed
 
 # For Fast-Recomputation mode :
 
-BATCH_SIZE_FAST_RECOMPUTATION = 27
+BATCH_SIZE_FAST_RECOMPUTATION = 100000
 
 # --------------------------------- #
 
@@ -81,8 +86,15 @@ WEIGHTING_RULE = "(1 + nb_elec_s / 100) * (1 + visit_t / 10)"
 
 # --- Intern SPARK parameters ---- #
 
-MAX_ROW_SIZE_PER_TASK = 200
+MAX_ROW_SIZE_PER_TASK = 180
+
+
+"""
 
 MIN_MEMORY_PATH_NB_FILES = 7
+
+RATIO_CLEAN_CACHE_MEMORY = 0.3
+
+"""
 
 

@@ -23,7 +23,9 @@ if __name__ == "__main__":
 
     mode, experiment_name, fast_recomp, exp_fr = mode_experiment_spark_agregator(sys.argv[1:])
 
-    date = str(datetime.now()).split(".")[0].replace(" ","_")
+    date = datetime.now()
+
+    string_date = str(date).split(".")[0].replace(" ","_")
 
     if mode == "equiprobable":
 
@@ -59,17 +61,20 @@ if __name__ == "__main__":
 
             continue
 
+        len_batch = len(batch_list)
+
         if mode=="weighted":
 
-            df_result = aggregate_a_batch(batch_list, mode)
+            df_result, len_df_filter = aggregate_a_batch(batch_list, mode)
 
         elif mode=="equiprobable":
 
-            df_result = aggregate_a_batch(batch_list, mode, weighted_feats_df)
+            df_result, len_df_filter = aggregate_a_batch(batch_list, mode, weighted_feats_df)
 
-        df_table_saved = transfer_to_db_and_snapshot(df_result, experiment_name)
 
-        save_df_to_csv(df_table_saved, experiment_name, date, batch_nb)
+        df_table_saved = transfer_to_db_and_snapshot(df_result, experiment_name, date, batch_nb, mode, len_batch, len_df_filter)
+
+        save_df_to_csv(df_table_saved, experiment_name, string_date, batch_nb, len_df_filter)
 
         pop_head_buffer_batches(experiment_name, mode)
 

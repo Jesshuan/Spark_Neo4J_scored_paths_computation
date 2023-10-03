@@ -2,6 +2,8 @@ import time
 
 from spark_process.spark_and_memory_paths import spark_get_all_memory_paths
 
+from delta import *
+
 
 while True:
 

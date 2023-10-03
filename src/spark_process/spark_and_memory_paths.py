@@ -13,19 +13,9 @@ import os
 
 from delta import *
 
-#RELATIVE_LIMIT_ROWS_DF_MEMORY = 10000000
 
 
-""" def spark_count(df_spark):
 
-    df = df_spark \
-        .withColumn("collection", explode(col("collection"))) \
-        .groupBy("collection").count() \
-        .withColumnRenamed("collection", "insee") \
-        .withColumnRenamed("count", "value") \
-        .toPandas()
-    
-    return df """
 
 def spark_get_all_memory_paths():
 
@@ -34,6 +24,10 @@ def spark_get_all_memory_paths():
     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
 
     spark = configure_spark_with_delta_pip(builder).master("local").getOrCreate()
+
+    delta_table = DeltaTable.forPath(spark, MEMORY_PATHS_FOLDER)
+
+    print(delta_table.history(1).show())
 
     df_spark_memory = spark.read.format("delta").load(MEMORY_PATHS_FOLDER)\
                             .dropDuplicates(["source", "target"])
@@ -137,18 +131,18 @@ def spark_append_to_memory_paths(result_paths_list):
             
             df_concatenate = df_spark_memory.unionByName(df_result_spark)
             
-            df_concatenate.repartition("source").write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
+            df_concatenate.write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
 
         else:
 
             print("Overwrite/write results to memory path...")
             
-            df_result_spark.repartition("source").write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
+            df_result_spark.write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
 
     else:
         print("Overwrite/write results to memory path...")
 
-        df_result_spark.repartition("source").write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
+        df_result_spark.write.format("delta").mode("overwrite").save(MEMORY_PATHS_FOLDER)
 
     df_result_spark.unpersist()
      

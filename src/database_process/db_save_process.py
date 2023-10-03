@@ -6,7 +6,7 @@ from variables.memory_path import DB_SNAPSHOTS_FOLDER
 
 
 
-def save_df_to_csv(df_table_saved, experiment_name, date, batch_nb):
+def save_df_to_csv(df_table_saved, experiment_name, date, batch_nb, len_batch):
 
     length_df = len(df_table_saved)
 
@@ -22,7 +22,7 @@ def save_df_to_csv(df_table_saved, experiment_name, date, batch_nb):
 
         os.makedirs(DB_SNAPSHOTS_FOLDER + experiment_name)
 
-    filename = "db_snapshot_exp_" + experiment_name + "_" + date + "_" + str(batch_nb)
+    filename = "db_snapshot_exp_" + experiment_name + "_" + date + "_" + str(batch_nb) + "_" + str(len_batch)
 
     df_table_saved.to_csv(DB_SNAPSHOTS_FOLDER + experiment_name + "/" + filename, sep=",")
 
