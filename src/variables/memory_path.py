@@ -1,5 +1,8 @@
 # ---- MEMORY PATH ---- #
 
+# Theses paths are define with the initial architecture of the spark container
+# Move it just if you transform the architecture...
+
 SOURCE_TARGET_LIST_FOLDER = "/opt/bitnami/spark/work/data/script_memory/st_lists/"
 
 MEMORY_PATHS_FOLDER = "/opt/bitnami/spark/work/data/memory_paths/"

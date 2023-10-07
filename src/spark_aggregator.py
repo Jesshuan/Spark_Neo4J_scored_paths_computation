@@ -29,8 +29,6 @@ if __name__ == "__main__":
 
     string_date = str(date).split(".")[0].replace(" ","_")
 
-    print(DB_PASSWORD)
-
     if mode == "equiprobable":
 
         print("Equiprobable mode : Neo4j request to get features for weighting process during all future aggregations....")

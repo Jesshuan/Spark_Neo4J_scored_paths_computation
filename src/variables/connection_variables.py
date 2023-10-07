@@ -1,5 +1,10 @@
 import os
 
+# Here, user must define connection variables for Neo4J and the database.
+
+# The passwords were supplied by environment variables (when the docker container was built).
+
+
 # ----- NEO4J CONNECTION VARIABLES ------ #
 
 NEO4J_HOST = "bolt://host.docker.internal:7687"

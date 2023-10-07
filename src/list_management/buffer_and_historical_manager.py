@@ -14,8 +14,19 @@ from variables.memory_path import HISTORICAL_BATCHES_FOLDER, BUFFER_BATCHES_FOLD
 
 from variables.hyperparameters import MAX_LEN_BUFFER_BATCHES_LIST, BATCH_SIZE_FAST_RECOMPUTATION
 
+# --- BUFFER & HISTORICAL LISTS MANAGEMENT FUNCTIONS ---- #
+# --------------------------------------------------------#
+
+
+# For the two system (buffer list and historical list), we must handling the write/read conflicts with the pickle object
+# Solution : infinite loop with a wait of 1 second in case of conflict
+
+# The historical list and buffer list objects consist of a map with the data (queue or list) and a mode.
+# This mode key is used to secure transactions by ensuring that the data is used in the right mode,
+# and supplied for the right purpose... 
 
 def verify_mode(data, mode):
+    # A sub-fuction shared between the two functions
     
     if data['mode']!=mode:
 
@@ -26,8 +37,12 @@ def verify_mode(data, mode):
     return
 
 
+# ---- LIST SUB-FUNCTIONS ----- #
+
 
 def read_a_list(path_file):
+
+    # --- Read the list (used by Fast Recomputation) -----#
 
     while True:
 
@@ -50,7 +65,9 @@ def read_a_list(path_file):
 
 
 def initialize_a_list(path_file, batch_list, mode):
-     
+
+    # --- If it's not already exists -----#
+   
     data = {"mode": mode,
             "list":batch_list}
 
@@ -81,6 +98,8 @@ def initialize_a_list(path_file, batch_list, mode):
 
 def append_to_list(path_file, data, batch_list):
 
+    # --- Append a batch to the historical list ----
+
     while True:
 
         try:
@@ -106,7 +125,15 @@ def append_to_list(path_file, data, batch_list):
             time.sleep(1)
 
 
+
+
+
+# ---- QUEUE SUB-FUNCTIONS ----- #
+
+
 def append_to_queue(path_file, data, batch_list, direction="right"):
+
+    # With the direction, this function append a batch to right (in case of fast recomputation) or left (default)
 
     while True:
 
@@ -138,6 +165,7 @@ def append_to_queue(path_file, data, batch_list, direction="right"):
 
             time.sleep(1)
 
+
             
 def initialize_a_queue(path_file, batch_list, mode):
 
@@ -158,8 +186,6 @@ def initialize_a_queue(path_file, batch_list, mode):
         try:
     
             with open(path_file, 'wb') as f:
-
-                #time.sleep(10)
          
                 pickle.dump(data, f)
 
@@ -189,8 +215,6 @@ def pop_queue(path_file, data):
 
                 data['queue'] = queue
 
-                #time.sleep(5)
-
                 pickle.dump(data, f)
 
             print("Queue pop !")
@@ -207,7 +231,7 @@ def pop_queue(path_file, data):
 
 
 
-
+# ---- HISTORICAL LIST FUNCTIONS ----- #
 
 
 def append_to_historical_batches(batch_list, experiment_name, mode):
@@ -254,7 +278,9 @@ def get_all_historical_batches(experiment_name, mode):
          
         return None
     
-    
+
+# ---- BUFFER QUEUE FUNCTIONS ----- #    
+
 
 def append_to_buffer_batches(batch_list, experiment_name, mode, direction='right'):
 
@@ -342,6 +368,11 @@ def pop_head_buffer_batches(experiment_name, mode):
          
         return None
     
+
+
+# ----- TRANSFERING FUNCTIONS FROM HISTORICAL LIST TO BUFFER LIST (QUEUE) ----- #
+
+# We need this sub-function of reverse a batch
 
 def batch_reverse(iterable, n=1):
         l = len(iterable)

@@ -6,7 +6,7 @@ import pandas as pd
 
 from datetime import datetime
 
-# POSTGRES Variables
+# --- Sub-fuctions requests on database ---
 
 
 def get_all_tables():
@@ -151,41 +151,4 @@ def update_to_database(df, table_name, meta_table_name, date_update, contributor
     conn.commit()
     cur.close()
     conn.close()
-
-
-"""
-
-def append_to_meta_table(meta_table_name, date_update, contributor, date, batch_nb, mode, len_batch):
-
-
-# --- Postgres Database Connection --- #
-
-# Connexion à la base de données PostgreSQL
-    conn = psycopg2.connect(
-    host = HOST_DB,
-    port = DB_PORT,
-    database = DB_NAME,
-    user= DB_USER,
-    password = DB_PASSWORD)
-
-
-    # Création d'un curseur
-    cur = conn.cursor()
-
-
-    # Requête d'insertion personnalisée
-    insert_query = f"INSERT INTO {meta_table_name} \
-                    (upsert_date, contributor, algo_start_date, batch_nb, mode, batch_size) \
-                    VALUES \
-                    ({date_update}, {contributor}, {date}, {batch_nb}, {mode}, {len_batch});"
-
-    # Exécution de la requête
-    cur.execute(insert_query)
-
-# Valider les modifications et fermer la connexion
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    """
 
