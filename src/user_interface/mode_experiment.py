@@ -6,6 +6,16 @@ from datetime import datetime
 
 from variables.memory_path import HISTORICAL_BATCHES_FOLDER
 
+
+# ---- User Interface functions ---- #
+
+# Management of args provided by the user for the 2 scripts
+# with the getopt library
+
+# -- Sub-functions --- #
+
+# help instructions (depend on the script)
+
 def usage__paths_computer():
 
     print("You have to specify : \n \
@@ -22,7 +32,9 @@ def usage__spark_agregator():
           -f (or --fast_recomputation_inspired_by=) followed by the name of the experiment provided for the fast recomputation (no default value) \n" )
     
     return
-    
+
+
+# -- Main functions --- #
 
 def mode_experiment_paths_computer(args_list):
 

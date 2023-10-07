@@ -17,8 +17,8 @@ from variables.hyperparameters import SOURCE_FILTER_COL, SOURCE_FILTER_VALUE, TA
 
 from variables.memory_path import SOURCE_TARGET_LIST_FOLDER
 
-# --- Sub-Functions definition for two modes ----
 
+# --- Sub-Sub-Functions definition for two modes ----
 
 def equiprobable_list_generation(df, col_weighted, value_filter):
 
@@ -72,7 +72,7 @@ def weighted_distribution_list_generation(df, col_weighted, value_filter, divide
 
 
 
-# --- MAin Function ----
+# --- Sub-Function ----
 
 def source_target_generation(mode):
 
@@ -136,6 +136,8 @@ def source_target_generation(mode):
     return source_list, target_list
 
 
+
+# --- Main function ---- #
 
 def provide_source_target_lists(mode, experiment_name):
 

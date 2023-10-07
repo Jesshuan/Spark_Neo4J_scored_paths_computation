@@ -5,6 +5,7 @@ import pandas as pd
 from variables.memory_path import DB_SNAPSHOTS_FOLDER
 
 
+# --- Function to save the database in a local csv file ---
 
 def save_df_to_csv(df_table_saved, experiment_name, date, batch_nb, len_batch):
 

@@ -1,4 +1,8 @@
 
+# ---- Cypher request functions on Neo4J ---- #
+
+
+
 def check_projections_list(tx):
 
     query = "CALL gds.graph.list() YIELD graphName RETURN collect(graphName) as list"
@@ -6,10 +10,14 @@ def check_projections_list(tx):
     result = tx.run(query)
     return result.data()
 
-#        CITY: {properties: ['insee', 'x', 'y']}, \
-# NEARLY_TO: {properties:'travel_time', orientation : 'UNDIRECTED'}, \
+
 
 def projection_graph(tx, name_graph):
+
+    # Function to generate a graph projection for the algo shortest path
+    # We just need ROAD_POINT nodes and RELATED edge.
+    # The weighted property will be "travel_time" during the shortest path processing
+    # Orientation "NATURAL" allows us to keep a sense with the roads
 
     query = "CALL gds.graph.project( \
     '" + name_graph + "', \
@@ -48,6 +56,9 @@ def get_all_communes_with_coords(tx):
 
 def get_all_communes_with_properties_cypher(tx, properties_list):
 
+    # A custom query to get all insee code with a specific list of properties
+    # Query used by the two programs
+
     return_instruction = ",".join(["n." + arg + " as " + arg for arg in properties_list])
 
     query = "MATCH (n:CITY) RETURN " + return_instruction
@@ -57,6 +68,9 @@ def get_all_communes_with_properties_cypher(tx, properties_list):
 
 
 def get_cities_path_from_path_list(tx, props_list):
+
+    # A query to get all the cities which are "NEARLY_TO" all the road_points of a path
+    # This query is used by the "agregator" script
 
     query = "UNWIND $props_list AS map \
                 MATCH (c:CITY)-[NEARLY_TO]->(p:ROAD_POINT) \
@@ -70,6 +84,11 @@ def get_cities_path_from_path_list(tx, props_list):
 
 
 def shortest_path_request(tx, props_list, graph_proj_name):
+
+    # Our favorite centra query...
+    # With two city nodes (source and target), we get the two associated road_point ("VERY_NEARLY_TO" relationships)
+    # And compute the shortest path algorithm between these two nodes, with a weight property as "travel-time"
+    # We return all the path, source, target, and list of incremental cost (of travel time) during the travel
 
     query = "UNWIND $props_list AS map \
             MATCH (source:CITY {insee: map.source})-[:VERY_NEARLY_TO]-(p_s:ROAD_POINT) \
