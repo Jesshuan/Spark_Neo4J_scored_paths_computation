@@ -17,7 +17,7 @@ And the website mock-up : https://github.com/Thopiax/e-cartomobile-ui
 
 As part of the project's small R&D team, we're looking to "score" the needs of every town and village in France in terms of charging points for users' daily journeys, tourist trips, etc...
 
-This modelling research has led us to divide these types of needs into 3 or 4 categories, which are updated in this methodology : (link)
+This modelling research has led us to divide these types of needs into 3 or 4 categories, which are updated in this methodology : https://dataforgood.notion.site/M-thodologie-83832573d23f484f960db4e77561ac14
 
 In this methodology, an important category of score is the score linked to the tourism flow :
 
@@ -73,6 +73,131 @@ The second sript, **"spark_aggregator.py" script**:
 
 - (and take a snapshot of the database and save it, for any specific studies)
 
+----
+
+### Launching the Spark (and database) container(s)
+
+Git clone this project !...
+
+Before building and launching the container, you must verify the docker-compose file :
+
+- If you don't need a test database (external database), you can comment or remove the two service postgres-db and postgres-admin.
+
+- Please adjust your ports numbers if necessary (I use the port 5433 for the test database, because my port 5432 is already used by a postgres service, you can correct it to 5432.)
+
+- All the sensitive data (passwords) is transmitted via environment variables.
+You need to create an ".env" file in the same folder than the docker-compose file and write the passwords for the Neo4j instances and the database in it, like this :
+
+```
+
+NEO4J_PASSWORD = "[password_for_neo4j]"
+
+DB_PASSWORD="[password_for_my_db]"
+
+```
+
+This .env file will be interpreted when the container is built.
+
+Add other environment variables if you don't want it to be shared on a git account like this one. Or adopt another method like docker secrets, if the database allows it.
+
+-  In the docker-compose file, on the spark-worker service chapter, adjust the memory and processors size of the spark components : SPARK_WORKER_MEMORY, SPARK_EXECUTOR_MEMORY, SPARK_WORKER_CORES.
+Number of spark-worker will be mutiplied during the building and launching. Therefore, please calculate this parameters in function of your local ressources but also you desired number of spark worker.
+
+
+-> **Build and launch the containers** :
+
+```
+docker-compose up --scale spark-worker=2
+```
+
+...for example, if you want two spark worker (default : 1)
+
+
+In a terminal, to see if the container(s) work:
+
+```
+docker ps
+```
+
+### Change parameters
+
+All the scripts and module are synchronized between your local interface and the container envionement.
+So, you can change all parameters you want in the "variables" folder :
+
+- connections variables
+
+- memory path (but don't change it except in the case of restructuring the code architecture)
+
+- **hyperparameters** :
+
+in this file, please change your contributor name. (This contributor name will be used to identify who is sending which batch in the monitoring of calculated batches, if a database and an experiment are shared between several contributors)
+
+Check all the others parameters and don't change the default paramaters if you don't immediately understand the purpose of each parameter...
+
+Parameters like the Filters Parameters and the Weighting Parameters (for "equiprobable" mode) must remain fixed for a single experiment. (share your hyperparameters between contributors if you share the same experiment!)
+
+
+### Launching the two scripts
+
+Now, to launch the two script, the preferable option is to enter within the spark container. (Visualisation is a better thing when the script are processing !...)
+
+The main (executor) spark container has a name ending in "...spark" and not "...spark-worker".
+
+Locate this executor spark container by its ID with ```docker ps```.
+
+And do :
+
+```
+docker exec -it [CONTAINER_ID] sh
+```
+
+Once inside, you can do "cd work/src" etc... to find the two scripts.
+
+-> You can firstly launch the script "paths_calculator.py".
+
+```
+python paths_calculator.py
+```
+
+Please specify the name of your experiment and the mode with these options:
+
+```
+python paths_calculator.py -e my_experiment_name -m equiprobable
+```
+
+or ```-m weighted``` in case of "weigthed" mode.
+
+(By default, the mode is "equiprobable" and the experiment name will be a string composed with the actual date and the word "experiment_" )
+
+
+-> You can secondly, in parallel, launch the script "spark_aggregator.py".
+
+```
+python spark_aggregator.py
+```
+
+Please specify the name of your experiment and the mode with these options:
+
+```
+python spark_aggregator -e my_experiment_name -m equiprobable
+```
+
+or ```-m weighted``` in case of "weigthed" mode.
+
+(By default, the mode is "equiprobable" and the experiment name will be a string composed with the actual date and the word "experiment_" )
+
+The mode shared between the two script, with the same experiment name, must be the same (otherwise it will generate an error)
+
+A third option can be optionnaly used in case of "fast recomputation" for this script :
+
+```
+python spark_aggregator -e my_experiment_name -m weighted -f old_experiment_name
+```
+
+This option means that the aggregator script, before any other batch, will start by retrieving all the history of another experiment and quickly recalculate all the batches (in the same order) of this other (and old) experiment, before waiting for new batches from the current experiment.
+This "fast recomputation" mode is very useful for trying out, for example, other weighting laws in the "equiprobable" mode.
+
+----
 
 ### Difference between the two mode "weighted" and "equiprobable" :
 
@@ -81,21 +206,39 @@ Here, we explain the difference between the two mode "weighted" and "equiprobabl
 In both cases, the idea is to weight the scores obtained by the towns and villages, by virtue of their presence on the routes, by their relative importance in relation to the problem.
 A path, and the towns that make it up, is more important (more likely to be used) if the source town has more registered electric vehicles. Similarly, it will also be weighted more heavily (and so will the towns that make it up) if the destination town has a higher tourism score (for example, the "number of visitor points" feature).
 
-
-![weighted mode schema](/illustr/weighted_mode_schema.jpg "Weighted mode schema").
-
 In the **"weighted" mode**, this weighting is carried out upstream, when the initial lists of possible sources and targets are built.
+
 Firstly, a filter can be applied to remove from the list source towns that do not have enough registered electric vehicles (e.g. < 5) or destination towns that do not have enough tourist points of interest (e.g. < 2).
 The script then builds its list of sources according to the importance of a feature. A town with only 5 registered vehicles will appear only 1 time in the source list, for example. Whereas a town with, say, 200 electric vehicles will appear 20 times (2000 times 0.01, because there is a parameter to reduce this impact to avoid lists that are too large).
 Similarly, for the list of destinations, a town with just 10 tourist points of interest will appear, for example, 1 time, whereas a town with 180 will appear 18 times (a reduction factor of 0.1).
+
 In this way, when the script then takes its source/destination pairs at random from the lists constructed, it follows a distribution of the relative importance of each path, in the eyes of the problem.
+
 This mode therefore "gets to the point" by having a greater chance of calculating the important paths, and it is therefore possible that it will converge more quickly towards a solution for score 2.
 
-![equiprobable mode schema](/illustr/equiprobable_mode_schema.jpg "Equiprobable mode schema").
+
+![weighted mode schema](/illustr/weighted_mode_schema.jpg "Weighted mode schema")
 
 In **"equiprobable" mode**, the weighting is not upstream but downstream.
+
 As in the previous mode, when the source and destination base lists are compiled, filters can be applied to remove cities that do not have enough electric vehicles as sources, or cities that do not have enough touristic points of interest as destinations. However, apart from this filter, all source and destination cities will be represented in the basic list in the same proportion.
-So the paths are calculated regardless of any weighting.
+
+So the paths are calculated regardless of any weighting. In this way, all the possible paths are fairly represented, and their representation is balanced over time, even if it seems to converge less quickly towards a possible global solution for score 2.
+
+Then, just before the aggregation phase, the important features of the sources and destinations that are to be used to weight the importance of the paths are requested in the graph. Aggregation takes into account a weighting law between these features that has been entered by the user. 
+
+The advantage of this mode is that a solution can be calculated without weighting initially, and then a weighting rule can be provided afterwards.
+
+![equiprobable mode schema](/illustr/equiprobable_mode_schema.jpg "Equiprobable mode schema")
+
+The differences between the two modes force the two scripts to use different join and data path logics, as can be seen in the two diagrams above.
+The main implementation difference is that in the "weighted" mode, the paths already calculated in the batch and those yet to be calculated are kept and added to be supplied to the aggregator script, in order to preserve the distribution of source lists and upstream weighted targets. This mode is based on a progressive incrementation of important paths (and the cities associated with these paths and scored), where redundancy reflects importance.
+In "equiprobable" mode, the paths already calculated in the batch (already present in memory) are of no interest, and are replaced, within a loop, by new paths to be calculated. The aim of this mode is to achieve exhaustive computation of all possible source/target combinations, because the importance of each path (and of the cities associated with these paths and scored) is only deduced after the fact when the weighting for each path is calculated.
+
+
+
+
+
 
 
 
