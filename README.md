@@ -238,6 +238,8 @@ In "equiprobable" mode, the paths already calculated in the batch (already prese
 
 ### Map Vizualisation :
 
+![example map France with paths](/illustr/carte_france_paths.jpg "Example map France with paths")
+
 In addition to the results stored in your database (or the test database supplied as a container), it is possible to launch a third script, from the "src" folder, which launches a joint request to your database and the Neo4j graph (to retrieve the coordinates of each city) and then uses this to generate a map with Plotly express.
 This map is automatically saved in html format in a "viz" folder.
 Simply run the python script like this:
