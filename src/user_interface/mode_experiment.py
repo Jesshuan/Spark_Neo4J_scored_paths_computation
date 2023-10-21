@@ -33,6 +33,13 @@ def usage__spark_agregator():
     
     return
 
+def usage__export_map():
+
+    print("You have to specify : \n \
+          -e (or --experiment_name=) followed by the name of the existing experiment (necessary)" )
+    
+    return
+
 
 # -- Main functions --- #
 
@@ -84,6 +91,8 @@ def mode_experiment_paths_computer(args_list):
     print("")
 
     return mode, experiment_name
+
+
 
 
 def mode_experiment_spark_agregator(args_list):
@@ -160,3 +169,43 @@ def mode_experiment_spark_agregator(args_list):
     
 
     return mode, experiment_name, fast_recomp, exp_fr
+
+
+
+
+def experiment_export_map(args_list):
+
+    try:   
+
+        if len(args_list) < 2:
+            usage__export_map()
+            print("Please, give an argument for experiment_name...")
+            sys.exit(2)
+
+        opts, args = getopt.getopt(args_list, "he:", ["help", "experiment_name="])
+    except getopt.GetoptError:           
+        usage__export_map()                          
+        sys.exit(2)
+
+    for opt, arg in opts:
+
+        if opt in ("-h", "--help"):
+            print("--- help for shell command ---")     
+            usage__export_map()                      
+            sys.exit(0) 
+                                          
+        elif opt in ("-e", "--experiment_name"):
+            experiment_name = arg
+        else:
+            print("argument not recognized...")
+            usage__export_map()                    
+            sys.exit(2)
+
+    print("")
+    print("------------###############---------------")
+    print("Export final map result -> html file")
+    print(f"Experiment_name : {experiment_name}")
+    print("------------###############---------------")
+    print("")
+
+    return experiment_name

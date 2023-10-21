@@ -12,3 +12,5 @@ HISTORICAL_BATCHES_FOLDER = "/opt/bitnami/spark/work/data/script_memory/historic
 BUFFER_BATCHES_FOLDER = "/opt/bitnami/spark/work/data/script_memory/buffer_batches_lists/"
 
 DB_SNAPSHOTS_FOLDER = "/opt/bitnami/spark/work/data/database_records/"
+
+MAP_RESULT_FOLDER = "/opt/bitnami/spark/work/data/viz/"

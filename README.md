@@ -236,6 +236,20 @@ The main implementation difference is that in the "weighted" mode, the paths alr
 In "equiprobable" mode, the paths already calculated in the batch (already present in memory) are of no interest, and are replaced, within a loop, by new paths to be calculated. The aim of this mode is to achieve exhaustive computation of all possible source/target combinations, because the importance of each path (and of the cities associated with these paths and scored) is only deduced after the fact when the weighting for each path is calculated.
 
 
+### Map Vizualisation :
+
+In addition to the results stored in your database (or the test database supplied as a container), it is possible to launch a third script, from the "src" folder, which launches a joint request to your database and the Neo4j graph (to retrieve the coordinates of each city) and then uses this to generate a map with Plotly express.
+This map is automatically saved in html format in a "viz" folder.
+Simply run the python script like this:
+
+```
+python export_map_result_html.py -e my_experiment_name
+```
+
+Make sure you supply an existing experiment name.
+
+
+Moreover, you can, of course, export your tables stored in the database, whether they be tables containing the cities that have been marked or meta-tables listing the progress of batch shipments for each experiment.
 
 
 

@@ -2,4 +2,7 @@ data/memory_paths
 data/postgres_data
 data/script_memory
 data/database_records
+data/viz
+meta_equiprobable_mode.csv
+meta_weighted_mode_2.csv
 .env

@@ -39,7 +39,7 @@ services:
       - ./test:/test
 
   postgres-db:
-    image: postgres
+    image: postgres:15
     restart: always
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}

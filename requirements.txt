@@ -5,3 +5,4 @@ pyarrow==13.0.0
 psycopg2-binary~=2.9.6
 fastparquet==2023.7.0
 delta_spark==2.4.0
+plotly-express==0.4.1

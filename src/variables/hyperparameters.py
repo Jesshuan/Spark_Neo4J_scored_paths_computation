@@ -54,7 +54,7 @@ MAX_LEN_BUFFER_BATCHES_LIST = 10000 # Maximun number of batches stocked in the b
 
 # For Fast-Recomputation mode :
 
-BATCH_SIZE_FAST_RECOMPUTATION = 100000 # Batch-size for the "fast recomputation" mode. It could be larger than the initial batch size (NB_DRAWS).
+BATCH_SIZE_FAST_RECOMPUTATION = 10000 # Batch-size for the "fast recomputation" mode. It could be larger than the initial batch size (NB_DRAWS).
 
 # --------------------------------- #
 
